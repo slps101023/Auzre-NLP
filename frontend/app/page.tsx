@@ -1,65 +1,268 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, KeyboardEvent, useRef } from 'react';
+
+export default function HomePage() {
+  const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // const handleProcess = async () => {
+  //   if (!inputText.trim() || loading) return;
+
+  //   const userMessage = inputText;
+  //   // 先把使用者的輸入加入畫面，並清空輸入框
+  //   setChatHistory((prev) => [...prev, { role: 'user', content: userMessage }]);
+  //   setInputText('');
+  //   setLoading(true);
+
+  //   // 重置 textarea 高度
+  //   if (textareaRef.current) {
+  //     textareaRef.current.style.height = 'auto';
+  //   }
+
+  //   try {
+  //     // 呼叫 FastAPI 後端 (請確認後端正在執行)
+  //     const response = await fetch('http://localhost:8000/analyze', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ news_text: userMessage }),
+  //     });
+
+  //     const result = await response.json();
+
+  //     // 將 AI 的分析結果加入畫面
+  //     setChatHistory((prev) => [...prev, { role: 'assistant', data: result }]);
+  //   } catch (e) {
+  //     console.error("處理失敗", e);
+  //     setChatHistory((prev) => [...prev, { role: 'assistant', error: true }]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  // 測試UI介面
+  const handleProcess = async () => {
+    if (!inputText.trim() || loading) return;
+
+    const userMessage = inputText;
+    // 先把使用者的輸入加入畫面，並清空輸入框
+    setChatHistory((prev) => [...prev, { role: 'user', content: userMessage }]);
+    setInputText('');
+    setLoading(true);
+
+    // 重置 textarea 高度
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
+    // ===== 🚧 測試模式：不呼叫後端，直接使用假資料 =====
+    setTimeout(() => {
+      const mockResult = {
+        "original_text": userMessage,
+        "translated_text": "微軟和 OpenAI 今日宣布了一項新的數十億美元投資，計劃在美國各地的資料中心建立一台龐大的超級電腦。這項代號為「星門」的突破性專案旨在推動人工智慧與機器學習的界限。儘管科技投資者對潛在的經濟成長與創新感到高度樂觀，但一些環境評論家對這些新設施龐大的碳足跡與能源消耗提出了嚴重的擔憂。",
+        "sentiment": {
+          "sentiment": "mixed", // 您可以自己改成 'positive' 或 'negative' 看看徽章變化
+          "confidence_scores": {
+            "positive": 0.45,
+            "neutral": 0.10,
+            "negative": 0.45
+          }
+        },
+        "summary": "微軟與 OpenAI 宣布斥資數十億美元在美國建設名為「星門」的 AI 超級電腦，此舉雖受投資者看好，但也引發了環保人士對能源消耗的擔憂。",
+        "entities": [
+          { "name": "微軟", "url": "https://zh.wikipedia.org/wiki/微軟" },
+          { "name": "OpenAI", "url": "https://zh.wikipedia.org/wiki/OpenAI" },
+          { "name": "人工智慧", "url": "https://zh.wikipedia.org/wiki/人工智慧" },
+          { "name": "機器學習", "url": "https://zh.wikipedia.org/wiki/機器學習" }
+        ],
+        "audio_url": "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"
+      };
+
+      // 將假資料推進畫面
+      setChatHistory((prev) => [...prev, { role: 'assistant', data: mockResult }]);
+      setLoading(false);
+    }, 1500); // 故意等待 1.5 秒，讓您能欣賞載入中的動畫
+  };
+
+  // 支援按 Enter 送出 (Shift+Enter 換行)
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleProcess();
+    }
+  };
+
+  // 自動調整輸入框高度
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    }
+  };
+
+  // 在元件外部或內部定義一個小工具，用來轉換情緒的圖示與顏色
+  const getSentimentStyle = (sentiment: string) => {
+    switch (sentiment) {
+      case 'positive': return { icon: '😊', text: '正向', color: 'bg-green-100 text-green-700 border-green-200' };
+      case 'negative': return { icon: '😔', text: '負面', color: 'bg-red-100 text-red-700 border-red-200' };
+      default: return { icon: '😐', text: '中立', color: 'bg-gray-100 text-gray-700 border-gray-200' };
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+    <div className="flex flex-col h-screen bg-white font-sans text-gray-800">
+
+      {/* 1. 頂部標題列 (極簡設計) */}
+      <header className="p-4 flex items-center justify-between">
+        <h1 className="text-xl font-medium text-gray-700">CNN新聞分析台</h1>
+      </header>
+
+      {/* 2. 對話與結果顯示區 (可滾動) */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 scroll-smooth">
+        <div className="max-w-3xl mx-auto space-y-8">
+
+          {/* 預設迎賓訊息 */}
+          {chatHistory.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full mt-20 space-y-4">
+              <h2 className="text-4xl font-semibold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                今天想分析哪則新聞？
+              </h2>
+              <p className="text-gray-500">貼上 CNN 等英文新聞內容，我會為您翻譯、補充維基百科並用語音播報。</p>
+            </div>
+          )}
+
+          {/* 對話紀錄 */}
+          {chatHistory.map((msg, index) => (
+            <div key={index} className="animate-fade-in-up">
+              {msg.role === 'user' ? (
+                // 使用者輸入區塊
+                <div className="flex justify-end">
+                  <div className="bg-gray-100 rounded-2xl px-5 py-3 max-w-[80%] whitespace-pre-wrap text-gray-800">
+                    {msg.content}
+                  </div>
+                </div>
+              ) : (
+                // AI 回覆區塊
+                <div className="flex justify-start">
+                  <div className="max-w-[90%] space-y-4">
+                    {msg.error ? (
+                      <p className="text-red-500">❌ 系統處理時發生錯誤，請稍後再試。</p>
+                    ) : (
+                      <div className="space-y-5 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+
+                        {/* 擴充 1：情緒分析徽章與語音播放器放在同一列 */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          {msg.data.audio_url && (
+                            <audio controls src={msg.data.audio_url} className="h-10 w-64" />
+                          )}
+
+                          {msg.data.sentiment && (
+                            <span className={`px-3 py-1.5 rounded-full text-sm font-medium border flex items-center gap-1 ${getSentimentStyle(msg.data.sentiment.sentiment).color}`}>
+                              <span>{getSentimentStyle(msg.data.sentiment.sentiment).icon}</span>
+                              情緒分析：{getSentimentStyle(msg.data.sentiment.sentiment).text}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* 擴充 2：重點摘要區塊 (特別凸顯) */}
+                        {msg.data.summary && (
+                          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                            <h4 className="text-sm font-bold text-blue-800 mb-1">⚡ 重點速讀</h4>
+                            <p className="text-gray-800 font-medium">{msg.data.summary}</p>
+                          </div>
+                        )}
+
+                        {/* 原始中文翻譯 (字體稍微調淡，讓重點放在摘要上) */}
+                        <div className="text-md leading-relaxed text-gray-600">
+                          {msg.data.translated_text}
+                        </div>
+
+                        {/* 維基百科補充 */}
+                        {msg.data.entities && msg.data.entities.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-gray-100">
+                            <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                              關鍵字補充
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {msg.data.entities.map((entity: any, i: number) => (
+                                <a
+                                  key={i} href={entity.url} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                                >
+                                  {entity.name} ↗
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* 載入中動畫 */}
+          {loading && (
+            <div className="flex justify-start animate-pulse">
+              <div className="flex gap-2 items-center text-blue-500 font-medium bg-blue-50 px-4 py-2 rounded-2xl">
+                <span className="flex gap-1">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </span>
+                正在分析新聞與生成語音...
+              </div>
+            </div>
+          )}
         </div>
       </main>
+
+      {/* 3. 置底輸入框 (Gemini 風格) */}
+      <footer className="p-4 w-full max-w-3xl mx-auto mb-4">
+        <div className="relative flex flex-col bg-[#f0f4f9] rounded-[24px] p-2 focus-within:ring-1 focus-within:ring-gray-300 transition-all shadow-sm">
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
+            placeholder="在此貼上英文新聞 (按 Enter 送出)"
+            className="w-full bg-transparent resize-none outline-none px-4 py-3 max-h-48 text-gray-800 placeholder-gray-500"
+            rows={1}
+          />
+
+          <div className="flex justify-between items-center px-2 pb-1">
+            {/* 左側可擴充功能 (例如加入附件的按鈕) */}
+            <div className="text-gray-400">
+              <button className="p-2 hover:bg-gray-200 rounded-full transition" title="目前僅支援文字分析">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+              </button>
+            </div>
+
+            {/* 右側送出按鈕 */}
+            <button
+              onClick={handleProcess}
+              disabled={!inputText.trim() || loading}
+              className={`p-2 rounded-full transition-colors ${inputText.trim() && !loading
+                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+            >
+              <svg className="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p className="text-center text-xs text-gray-400 mt-3">
+          AI 可能會產生不準確的資訊，請斟酌參考維基百科連結。
+        </p>
+      </footer>
+
     </div>
   );
 }
