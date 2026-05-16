@@ -8,40 +8,6 @@ export default function HomePage() {
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // const handleProcess = async () => {
-  //   if (!inputText.trim() || loading) return;
-
-  //   const userMessage = inputText;
-  //   // 先把使用者的輸入加入畫面，並清空輸入框
-  //   setChatHistory((prev) => [...prev, { role: 'user', content: userMessage }]);
-  //   setInputText('');
-  //   setLoading(true);
-
-  //   // 重置 textarea 高度
-  //   if (textareaRef.current) {
-  //     textareaRef.current.style.height = 'auto';
-  //   }
-
-  //   try {
-  //     // 呼叫 FastAPI 後端 (請確認後端正在執行)
-  //     const response = await fetch('http://localhost:8000/analyze', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ news_text: userMessage }),
-  //     });
-
-  //     const result = await response.json();
-
-  //     // 將 AI 的分析結果加入畫面
-  //     setChatHistory((prev) => [...prev, { role: 'assistant', data: result }]);
-  //   } catch (e) {
-  //     console.error("處理失敗", e);
-  //     setChatHistory((prev) => [...prev, { role: 'assistant', error: true }]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  // 測試UI介面
   const handleProcess = async () => {
     if (!inputText.trim() || loading) return;
 
@@ -56,34 +22,68 @@ export default function HomePage() {
       textareaRef.current.style.height = 'auto';
     }
 
-    // ===== 🚧 測試模式：不呼叫後端，直接使用假資料 =====
-    setTimeout(() => {
-      const mockResult = {
-        "original_text": userMessage,
-        "translated_text": "微軟和 OpenAI 今日宣布了一項新的數十億美元投資，計劃在美國各地的資料中心建立一台龐大的超級電腦。這項代號為「星門」的突破性專案旨在推動人工智慧與機器學習的界限。儘管科技投資者對潛在的經濟成長與創新感到高度樂觀，但一些環境評論家對這些新設施龐大的碳足跡與能源消耗提出了嚴重的擔憂。",
-        "sentiment": {
-          "sentiment": "mixed", // 您可以自己改成 'positive' 或 'negative' 看看徽章變化
-          "confidence_scores": {
-            "positive": 0.45,
-            "neutral": 0.10,
-            "negative": 0.45
-          }
-        },
-        "summary": "微軟與 OpenAI 宣布斥資數十億美元在美國建設名為「星門」的 AI 超級電腦，此舉雖受投資者看好，但也引發了環保人士對能源消耗的擔憂。",
-        "entities": [
-          { "name": "微軟", "url": "https://zh.wikipedia.org/wiki/微軟" },
-          { "name": "OpenAI", "url": "https://zh.wikipedia.org/wiki/OpenAI" },
-          { "name": "人工智慧", "url": "https://zh.wikipedia.org/wiki/人工智慧" },
-          { "name": "機器學習", "url": "https://zh.wikipedia.org/wiki/機器學習" }
-        ],
-        "audio_url": "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"
-      };
+    try {
+      // 呼叫 FastAPI 後端 (請確認後端正在執行)
+      const response = await fetch('http://localhost:8000/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ news_text: userMessage }),
+      });
 
-      // 將假資料推進畫面
-      setChatHistory((prev) => [...prev, { role: 'assistant', data: mockResult }]);
+      const result = await response.json();
+
+      // 將 AI 的分析結果加入畫面
+      setChatHistory((prev) => [...prev, { role: 'assistant', data: result }]);
+    } catch (e) {
+      console.error("處理失敗", e);
+      setChatHistory((prev) => [...prev, { role: 'assistant', error: true }]);
+    } finally {
       setLoading(false);
-    }, 1500); // 故意等待 1.5 秒，讓您能欣賞載入中的動畫
+    }
   };
+  // 測試UI介面
+  // const handleProcess = async () => {
+  //   if (!inputText.trim() || loading) return;
+
+  //   const userMessage = inputText;
+  //   // 先把使用者的輸入加入畫面，並清空輸入框
+  //   setChatHistory((prev) => [...prev, { role: 'user', content: userMessage }]);
+  //   setInputText('');
+  //   setLoading(true);
+
+  //   // 重置 textarea 高度
+  //   if (textareaRef.current) {
+  //     textareaRef.current.style.height = 'auto';
+  //   }
+
+  //   // ===== 🚧 測試模式：不呼叫後端，直接使用假資料 =====
+  //   setTimeout(() => {
+      // const mockResult = {
+      //   "original_text": userMessage,
+      //   "translated_text": "微軟和 OpenAI 今日宣布了一項新的數十億美元投資，計劃在美國各地的資料中心建立一台龐大的超級電腦。這項代號為「星門」的突破性專案旨在推動人工智慧與機器學習的界限。儘管科技投資者對潛在的經濟成長與創新感到高度樂觀，但一些環境評論家對這些新設施龐大的碳足跡與能源消耗提出了嚴重的擔憂。",
+      //   "sentiment": {
+      //     "sentiment": "mixed", // 您可以自己改成 'positive' 或 'negative' 看看徽章變化
+      //     "confidence_scores": {
+      //       "positive": 0.45,
+      //       "neutral": 0.10,
+      //       "negative": 0.45
+      //     }
+      //   },
+      //   "summary": "微軟與 OpenAI 宣布斥資數十億美元在美國建設名為「星門」的 AI 超級電腦，此舉雖受投資者看好，但也引發了環保人士對能源消耗的擔憂。",
+      //   "entities": [
+      //     { "name": "微軟", "url": "https://zh.wikipedia.org/wiki/微軟" },
+      //     { "name": "OpenAI", "url": "https://zh.wikipedia.org/wiki/OpenAI" },
+      //     { "name": "人工智慧", "url": "https://zh.wikipedia.org/wiki/人工智慧" },
+      //     { "name": "機器學習", "url": "https://zh.wikipedia.org/wiki/機器學習" }
+      //   ],
+      //   "audio_url": "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"
+      // };
+
+  //     // 將假資料推進畫面
+  //     setChatHistory((prev) => [...prev, { role: 'assistant', data: mockResult }]);
+  //     setLoading(false);
+  //   }, 1500); // 故意等待 1.5 秒，讓您能欣賞載入中的動畫
+  // };
 
   // 支援按 Enter 送出 (Shift+Enter 換行)
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
