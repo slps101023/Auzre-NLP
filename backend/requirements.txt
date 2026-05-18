@@ -1,2 +1,4 @@
 fastapi
 azure.ai.translation.text
+azure.ai.textanalytics
+deep-translator

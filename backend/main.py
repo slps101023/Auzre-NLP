@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from services import translator
 from pydantic import BaseModel
+from services import Sentiment
 
 app = FastAPI()
 
@@ -18,32 +19,22 @@ class NewsRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World!"}
+    return {"message": "Server is running!"}
 
 @app.post("/analyze")
 async def analyze(news_request: NewsRequest):
     # Placeholder for actual analysis logic
     translated_text = translator.translate_news_to_zh(news_request.news_text)
+    sentiment_result, entity_to_url = Sentiment.analyze_sentiment_and_keywords(news_request.news_text)
     mockResult = {
         "original_text": news_request.news_text,
         "translated_text": translated_text,
-        "sentiment": {
-            "sentiment": "mixed",
-            "confidence_scores": {
-                "positive": 0.45,
-                "neutral": 0.10,
-                "negative": 0.45
-            }
-        },
+        "sentiment": sentiment_result,
         "summary": "微軟與 OpenAI 宣布斥資數十億美元在美國建設名為「星門」的 AI 超級電腦，此舉雖受投資者看好，但也引發了環保人士對能源消耗的擔憂。",
-        "entities": [
-            { "name": "微軟", "url": "https://zh.wikipedia.org/wiki/微軟" },
-            { "name": "OpenAI", "url": "https://zh.wikipedia.org/wiki/OpenAI" },
-            { "name": "人工智慧", "url": "https://zh.wikipedia.org/wiki/人工智慧" },
-            { "name": "機器學習", "url": "https://zh.wikipedia.org/wiki/機器學習" }
-        ],
+        "entities": entity_to_url,
         "audio_url": "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"
     };
+    print(mockResult)
     return mockResult
 
 @app.post("/crawler")

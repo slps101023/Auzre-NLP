@@ -6,7 +6,6 @@ from azure.core.exceptions import HttpResponseError
 def translate_news_to_zh(english_text):
     config = configparser.ConfigParser()
     config.read("C:\\Users\\User\\Documents\\NLP\\NLP_Final_Project\\backend\\config.ini")
-    print(config.sections())  # 列出所有的 section，確認是否成功讀取
 
     try:
         # 2. 建立 Azure Translator 的連線客戶端

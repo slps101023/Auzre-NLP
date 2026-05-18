@@ -58,26 +58,26 @@ export default function HomePage() {
 
   //   // ===== 🚧 測試模式：不呼叫後端，直接使用假資料 =====
   //   setTimeout(() => {
-      // const mockResult = {
-      //   "original_text": userMessage,
-      //   "translated_text": "微軟和 OpenAI 今日宣布了一項新的數十億美元投資，計劃在美國各地的資料中心建立一台龐大的超級電腦。這項代號為「星門」的突破性專案旨在推動人工智慧與機器學習的界限。儘管科技投資者對潛在的經濟成長與創新感到高度樂觀，但一些環境評論家對這些新設施龐大的碳足跡與能源消耗提出了嚴重的擔憂。",
-      //   "sentiment": {
-      //     "sentiment": "mixed", // 您可以自己改成 'positive' 或 'negative' 看看徽章變化
-      //     "confidence_scores": {
-      //       "positive": 0.45,
-      //       "neutral": 0.10,
-      //       "negative": 0.45
-      //     }
-      //   },
-      //   "summary": "微軟與 OpenAI 宣布斥資數十億美元在美國建設名為「星門」的 AI 超級電腦，此舉雖受投資者看好，但也引發了環保人士對能源消耗的擔憂。",
-      //   "entities": [
-      //     { "name": "微軟", "url": "https://zh.wikipedia.org/wiki/微軟" },
-      //     { "name": "OpenAI", "url": "https://zh.wikipedia.org/wiki/OpenAI" },
-      //     { "name": "人工智慧", "url": "https://zh.wikipedia.org/wiki/人工智慧" },
-      //     { "name": "機器學習", "url": "https://zh.wikipedia.org/wiki/機器學習" }
-      //   ],
-      //   "audio_url": "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"
-      // };
+  //     const mockResult = {
+  //       "original_text": userMessage,
+  //       "translated_text": "微軟和 OpenAI 今日宣布了一項新的數十億美元投資，計劃在美國各地的資料中心建立一台龐大的超級電腦。這項代號為「星門」的突破性專案旨在推動人工智慧與機器學習的界限。儘管科技投資者對潛在的經濟成長與創新感到高度樂觀，但一些環境評論家對這些新設施龐大的碳足跡與能源消耗提出了嚴重的擔憂。",
+  //       "sentiment": {
+  //         "sentiment": "mixed", // 您可以自己改成 'positive' 或 'negative' 看看徽章變化
+  //         "confidence_scores": {
+  //           "positive": 0.55,
+  //           "neutral": 0.10,
+  //           "negative": 0.35
+  //         }
+  //       },
+  //       "summary": "微軟與 OpenAI 宣布斥資數十億美元在美國建設名為「星門」的 AI 超級電腦，此舉雖受投資者看好，但也引發了環保人士對能源消耗的擔憂。",
+  //       "entities": [
+  //         { "name": "微軟", "url": "https://zh.wikipedia.org/wiki/微軟" },
+  //         { "name": "OpenAI", "url": "https://zh.wikipedia.org/wiki/OpenAI" },
+  //         { "name": "人工智慧", "url": "https://zh.wikipedia.org/wiki/人工智慧" },
+  //         { "name": "機器學習", "url": "https://zh.wikipedia.org/wiki/機器學習" }
+  //       ],
+  //       "audio_url": "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"
+  //     };
 
   //     // 將假資料推進畫面
   //     setChatHistory((prev) => [...prev, { role: 'assistant', data: mockResult }]);
@@ -105,9 +105,17 @@ export default function HomePage() {
   // 在元件外部或內部定義一個小工具，用來轉換情緒的圖示與顏色
   const getSentimentStyle = (sentiment: string) => {
     switch (sentiment) {
-      case 'positive': return { icon: '😊', text: '正向', color: 'bg-green-100 text-green-700 border-green-200' };
-      case 'negative': return { icon: '😔', text: '負面', color: 'bg-red-100 text-red-700 border-red-200' };
-      default: return { icon: '😐', text: '中立', color: 'bg-gray-100 text-gray-700 border-gray-200' };
+      case 'positive':
+        return { icon: '😊', text: '正向', color: 'bg-green-100 text-green-700 border-green-200' };
+      case 'negative':
+        return { icon: '😔', text: '負面', color: 'bg-red-100 text-red-700 border-red-200' };
+      case 'mixed':
+        // 📝 新增：處理正負情緒並存的情況
+        return { icon: '🤔', text: '混合', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
+      case 'neutral':
+      default:
+        // 真正的毫無情緒或沒抓到狀態時才走這裡
+        return { icon: '😐', text: '中立', color: 'bg-gray-100 text-gray-700 border-gray-200' };
     }
   };
 
