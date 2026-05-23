@@ -1,4 +1,6 @@
 import os
+import time
+import random
 import configparser
 import azure.cognitiveservices.speech as speechsdk
 
@@ -13,15 +15,16 @@ speech_config = speechsdk.SpeechConfig(
 )
 
 def azure_speech(user_input):
+
+    unique_filename = f"audio_{int(time.time())}_{random.randint(100, 999)}.mp3"
     # 設定音訊輸出格式為 MP3
     speech_config.set_speech_synthesis_output_format(
         speechsdk.SpeechSynthesisOutputFormat.Audio16Khz64KBitRateMonoMp3
     )
     # 設定為台灣繁體中文女性自然語音模型
     speech_config.speech_synthesis_voice_name = "zh-TW-HsiaoChenNeural"
-    
-    file_name = "chinese_audio.mp3"
-    file_path = os.path.join("C:\\Users\\User\\Documents\\NLP\\NLP_Final_Project\\backend\\static\\audio", file_name)
+
+    file_path = os.path.join("C:\\Users\\User\\Documents\\NLP\\NLP_Final_Project\\backend\\static\\audio", unique_filename)
     
     file_config = speechsdk.audio.AudioOutputConfig(filename=file_path)
     speech_synthesizer = speechsdk.SpeechSynthesizer(
@@ -34,7 +37,7 @@ def azure_speech(user_input):
     # 檢查合成結果
     if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
         print(f"✅ 語音合成成功：[{user_input}]，已儲存至 [{file_path}]")
-        return file_path
+        return f"http://localhost:8000/static/audio/{unique_filename}"
     elif result.reason == speechsdk.ResultReason.Canceled:
         cancellation_details = result.cancellation_details
         print(f"❌ 語音合成取消: {cancellation_details.reason}")

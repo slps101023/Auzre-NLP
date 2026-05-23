@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from services import Sentiment
 from services import summary
 from services import speech
+from services import scraper
 import os
 
 app = FastAPI()
@@ -26,6 +27,9 @@ app.add_middleware(
 class NewsRequest(BaseModel):
     news_text: str
 
+class CrawlerInput(BaseModel):
+    url: str
+
 @app.get("/")
 async def root():
     return {"message": "Server is running!"}
@@ -36,7 +40,7 @@ async def analyze(news_request: NewsRequest):
     translated_text = translator.translate_news_to_zh(news_request.news_text)
     sentiment_result, entity_to_url = Sentiment.analyze_sentiment_and_keywords(news_request.news_text)
     summary_result = summary.summarize_text(news_request.news_text)
-    speech_result = "http://localhost:8000/static/audio/chinese_audio.mp3"
+    speech_result = speech.azure_speech(summary_result)
     mockResult = {
         "original_text": news_request.news_text,
         "translated_text": translated_text,
@@ -45,10 +49,25 @@ async def analyze(news_request: NewsRequest):
         "entities": entity_to_url,
         "audio_url": speech_result
     };
-    print(mockResult)
+    print(f"分析結果: {mockResult}")  # 印出分析結果，確認格式正確
     return mockResult
 
 @app.post("/crawler")
-async def crawler(url: str):
-    # Placeholder for actual crawling logic
-    return {"crawled_data": f"Crawled data from: {url}"}
+async def crawler(crawler_input: CrawlerInput):
+    crawled_data = scraper.fetch_news_article(crawler_input.url)
+    translated_text = translator.translate_news_to_zh(crawled_data)
+    sentiment_result, entity_to_url = Sentiment.analyze_sentiment_and_keywords(crawled_data)
+    summary_result = summary.summarize_text(crawled_data)
+    speech_result = speech.azure_speech(summary_result)
+    mockResult = {
+        "original_text": crawled_data,
+        "translated_text": translated_text,
+        "sentiment": sentiment_result,
+        "summary": summary_result,
+        "entities": entity_to_url,
+        "audio_url": speech_result
+    };
+    print(f"分析結果: {mockResult}")  # 印出分析結果，確認格式正確
+    return mockResult
+
+#  啟動 python -m uvicorn main:app --reload
