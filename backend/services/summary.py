@@ -21,8 +21,6 @@ def summarize_text(text):
 
     documents = [text]
 
-    print("開始提取文章精華...\n" + "-"*40)
-
     poller = text_analytics_client.begin_extract_summary(
         documents,
         language="zh",
