@@ -1,10 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from services import translator
 from pydantic import BaseModel
 from services import Sentiment
+from services import summary
+from services import speech
+import os
 
 app = FastAPI()
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+static_dir = os.path.join(current_dir, "static")
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,13 +35,15 @@ async def analyze(news_request: NewsRequest):
     # Placeholder for actual analysis logic
     translated_text = translator.translate_news_to_zh(news_request.news_text)
     sentiment_result, entity_to_url = Sentiment.analyze_sentiment_and_keywords(news_request.news_text)
+    summary_result = summary.summarize_text(news_request.news_text)
+    speech_result = "http://localhost:8000/static/audio/chinese_audio.mp3"
     mockResult = {
         "original_text": news_request.news_text,
         "translated_text": translated_text,
         "sentiment": sentiment_result,
-        "summary": "微軟與 OpenAI 宣布斥資數十億美元在美國建設名為「星門」的 AI 超級電腦，此舉雖受投資者看好，但也引發了環保人士對能源消耗的擔憂。",
+        "summary": summary_result,
         "entities": entity_to_url,
-        "audio_url": "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"
+        "audio_url": speech_result
     };
     print(mockResult)
     return mockResult
