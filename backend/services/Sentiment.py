@@ -2,6 +2,7 @@ from azure.core.credentials import AzureKeyCredential
 from azure.ai.textanalytics import TextAnalyticsClient
 import configparser
 from deep_translator import GoogleTranslator
+from . import Entity_Recognition
 
 def analyze_sentiment_and_keywords(text):
     config = configparser.ConfigParser()
@@ -30,22 +31,31 @@ def analyze_sentiment_and_keywords(text):
             }
         }
 
-        # wiki link
-        result_wiki = text_analytics_client.recognize_linked_entities(
-            [text],
-        )
-        docs_wiki = [doc_wiki for doc_wiki in result_wiki if not doc_wiki.is_error]
-        entity_to_url = []
-        for doc_wiki in docs_wiki:
-            for entity in doc_wiki.entities:
-                if entity.data_source == "Wikipedia":
-                    entity_to_url.append({"name": entity.name, "url": entity.url})
+        # # wiki link(Azure Text Analytics 的實體連結功能)
+        # result_wiki = text_analytics_client.recognize_linked_entities(
+        #     [text],
+        # )
+        # docs_wiki = [doc_wiki for doc_wiki in result_wiki if not doc_wiki.is_error]
+        # entity_to_url = []
+        # for doc_wiki in docs_wiki:
+        #     for entity in doc_wiki.entities:
+        #         if entity.data_source == "Wikipedia":
+        #             entity_to_url.append({"name": entity.name, "url": entity.url})
+        # translator = GoogleTranslator(source='en', target='zh-TW')
+        # for item in entity_to_url:
+        #     original_name = item['name']
+        #     translated_name = translator.translate(original_name)
+        #     item['name'] = translated_name  # 直接替換掉原本的 name
+        # return sentiment_result, entity_to_url
+    
+        # wiki link (spacy_entity_linker 的實體連結功能)
+        result_wiki = Entity_Recognition.extract_entities(text)
         translator = GoogleTranslator(source='en', target='zh-TW')
-        for item in entity_to_url:
+        for item in result_wiki:
             original_name = item['name']
             translated_name = translator.translate(original_name)
             item['name'] = translated_name  # 直接替換掉原本的 name
-        return sentiment_result, entity_to_url
+        return sentiment_result, result_wiki
     except KeyError:
         return {"error": "找不到設定檔或內容不完整，請確認 config.ini 的格式是否正確。"}
 
