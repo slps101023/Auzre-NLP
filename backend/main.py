@@ -1,12 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from services import translator
+from services import analyze_news_text, crawl_and_analyze_news
 from pydantic import BaseModel
-from services import Sentiment
-from services import summary
-from services import speech
-from services import scraper
 import os
 
 app = FastAPI()
@@ -36,38 +32,12 @@ async def root():
 
 @app.post("/analyze")
 async def analyze(news_request: NewsRequest):
-    # Placeholder for actual analysis logic
-    translated_text = translator.translate_news_to_zh(news_request.news_text)
-    sentiment_result, entity_to_url = Sentiment.analyze_sentiment_and_keywords(news_request.news_text)
-    summary_result = summary.summarize_text(news_request.news_text)
-    speech_result = speech.azure_speech(summary_result)
-    mockResult = {
-        "original_text": news_request.news_text,
-        "translated_text": translated_text,
-        "sentiment": sentiment_result,
-        "summary": summary_result,
-        "entities": entity_to_url,
-        "audio_url": speech_result
-    };
-    print(f"分析結果: {mockResult}")  # 印出分析結果，確認格式正確
-    return mockResult
+    # 直接呼叫純文字分析函數
+    return analyze_news_text(news_request.news_text)
 
 @app.post("/crawler")
 async def crawler(crawler_input: CrawlerInput):
-    crawled_data = scraper.fetch_news_article(crawler_input.url)
-    translated_text = translator.translate_news_to_zh(crawled_data)
-    sentiment_result, entity_to_url = Sentiment.analyze_sentiment_and_keywords(crawled_data)
-    summary_result = summary.summarize_text(crawled_data)
-    speech_result = speech.azure_speech(summary_result)
-    mockResult = {
-        "original_text": crawled_data,
-        "translated_text": translated_text,
-        "sentiment": sentiment_result,
-        "summary": summary_result,
-        "entities": entity_to_url,
-        "audio_url": speech_result
-    };
-    print(f"分析結果: {mockResult}")  # 印出分析結果，確認格式正確
-    return mockResult
+    # 直接呼叫網址爬蟲分析函數
+    return crawl_and_analyze_news(crawler_input.url)
 
 #  啟動 python -m uvicorn main:app --reload
