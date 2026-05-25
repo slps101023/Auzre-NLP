@@ -1,6 +1,10 @@
 fastapi
 azure.ai.translation.text
 azure.ai.textanalytics
+azure-cognitiveservices-speech
 deep-translator
 configparser
 trafilatura
+spacy
+spacy-entity-linker
+uvicorn
