@@ -3,6 +3,7 @@ from azure.ai.textanalytics import TextAnalyticsClient
 import configparser
 from deep_translator import GoogleTranslator
 from . import Entity_Recognition
+from . import keyword_extractor
 
 def analyze_sentiment_and_keywords(text):
     config = configparser.ConfigParser()
@@ -50,12 +51,14 @@ def analyze_sentiment_and_keywords(text):
     
         # wiki link (spacy_entity_linker 的實體連結功能)
         result_wiki = Entity_Recognition.extract_entities(text)
+        filtered_result_wiki = keyword_extractor.filter_top_10_entities(text, result_wiki)
+        # 造成程式速度變慢主因
         translator = GoogleTranslator(source='en', target='zh-TW')
-        for item in result_wiki:
+        for item in filtered_result_wiki:
             original_name = item['name']
             translated_name = translator.translate(original_name)
             item['name'] = translated_name  # 直接替換掉原本的 name
-        return sentiment_result, result_wiki
+        return sentiment_result, filtered_result_wiki
     except KeyError:
         return {"error": "找不到設定檔或內容不完整，請確認 config.ini 的格式是否正確。"}
 

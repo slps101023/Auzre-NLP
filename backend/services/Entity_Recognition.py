@@ -21,8 +21,7 @@ def extract_entities(text):
 
 if __name__ == "__main__":
     sample_text = (
-        "Yesterday, NASA announced that Dr. Mark Davis, who holds a PhD in astrophysics, "
-        "found water on Mars. He previously studied at the Massachusetts Institute of Technology."
+        "Microsoft and OpenAI today announced a new multi-billion dollar investment to build a massive supercomputer across data centers in the United States. The breakthrough project, codenamed 'Stargate,' aims to push the boundaries of artificial intelligence and machine learning. While tech investors are highly optimistic about the potential economic growth and innovation, some environmental commentators have raised serious concerns about the substantial carbon footprint and energy consumption of these new facilities."
     )
     result_wiki = extract_entities(sample_text)
     docs_wiki = [doc_wiki for doc_wiki in result_wiki]

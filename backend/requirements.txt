@@ -8,3 +8,4 @@ trafilatura
 spacy
 spacy-entity-linker
 uvicorn
+keybert
